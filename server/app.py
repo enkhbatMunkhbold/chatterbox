@@ -3,7 +3,12 @@ from flask_restful import Resource
 from marshmallow.exceptions import ValidationError
 
 from config import app, db, api
-from models import User, Message
+from models import User, Message, UserSchema, MessageSchema
+
+user_schema = UserSchema()
+users_schema = UserSchema(many=True)
+message_schema = MessageSchema()
+messages_schema = MessageSchema(many=True)
 
 
 @app.route('/')
