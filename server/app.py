@@ -87,13 +87,61 @@ class Logout(Resource):
     
 api.add_resource(Logout, '/logout')
 
-# class Messages(Resource):
-#     def get(self):
-#         user_id = session.get('user_id')
-#         if user_id:
-#             user = db.session.get(User, user_id)
-#             if user:
-#                 user_data = user_schema
+class Messages(Resource):
+    def get(self):
+        try:
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'error': 'Not authenticated'}, 401
+
+            user = db.session.get(User, user_id)
+            if not user:
+                return {'error': 'User not found'}, 404
+
+            ordered_messages = Message.query.order_by(Message.created_at).all()
+            messages_data = []
+            for message in ordered_messages:
+                message_data = message_schema.dump(message)
+                messages_data.append(message_data)
+
+            return messages_data, 200
+        
+        except Exception as e:
+            return {'error': f'Internal server error: {str(e)}'}, 500
+    
+    def post(self):
+        try:
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'error': 'Not authenticated'}, 401
+
+            user = db.session.get(User, user_id)
+            if not user:
+                return {'error': 'User not found'}, 404
+
+            data = request.get_json()
+            if not data or not all(k in data for k in ['body']):
+                return {'error': 'Missing required field: body is required'}, 400
+
+            new_message = Message(
+                body=data['body'],
+                username=user.username,
+                user_id=user_id
+            )
+
+            db.session.add(new_message)
+            db.session.commit()
+
+            return message_schema.dump(new_message), 201
+        
+        except ValidationError as ve:
+            db.session.rollback()
+            return {'error': ve.messages}, 400
+        except Exception as e:
+            db.session.rollback()
+            return {'error': f'Internal server error: {str(e)}'}, 500
+        
+api.add_resource(Messages, '/messages')
 
 
     # if request.method == 'GET':
