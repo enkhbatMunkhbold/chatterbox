@@ -1,58 +1,54 @@
 import { useEffect, useState } from "react";
-import Header from "./Header";
-import Search from "./Search";
-import MessageList from "./MessageList";
-import NewMessage from "./NewMessage";
-
-const testUser = { username: "Duane" };
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Home from "./Home";
+import MessagesList from "./MessageList";
+import NavBar from "./NavBar";
+import Login from "./Login";
+import Register from "./Register"
 
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [messages, setMessages] = useState([]);
-  const [search, setSearch] = useState("");
+ 
+  const [user, setUser] = useState[null];
 
   useEffect(() => {
-    fetch("/messages")
-      .then((r) => r.json())
-      .then((messages) => setMessages(messages));
-  }, []);
-
-  function handleAddMessage(newMessage) {
-    setMessages([...messages, newMessage]);
-  }
-
-  function handleDeleteMessage(id) {
-    const updatedMessages = messages.filter((message) => message.id !== id);
-    setMessages(updatedMessages);
-  }
-
-  function handleUpdateMessage(updatedMessageObj) {
-    const updatedMessages = messages.map((message) => {
-      if (message.id === updatedMessageObj.id) {
-        return updatedMessageObj;
+    fetch('/check_session', {
+      credentials: 'include'
+    })
+    .then((r) => {
+      if(r.ok) {
+        return r.json().then(user => setUser(user))
+      } else if(r.status === 204) {
+        setUser(null)
       } else {
-        return message;
+        throw new Error(`HTTP error! Status: ${r.status}`)
       }
-    });
-    setMessages(updatedMessages);
-  }
-
-  const displayedMessages = messages.filter((message) =>
-    message.body.toLowerCase().includes(search.toLowerCase())
-  );
+    })
+    .catch(error => {
+      console.log("Error checking session:", error)
+      setUser(null)
+    })
+  }, [setUser])  
 
   return (
-    <main className={isDarkMode ? "dark-mode" : ""}>
-      <Header isDarkMode={isDarkMode} onToggleDarkMode={setIsDarkMode} />
-      <Search search={search} onSearchChange={setSearch} />
-      <MessageList
-        messages={displayedMessages}
-        currentUser={testUser}
-        onMessageDelete={handleDeleteMessage}
-        onUpdateMessage={handleUpdateMessage}
-      />
-      <NewMessage currentUser={testUser} onAddMessage={handleAddMessage} />
-    </main>
+    <Router>
+      <NavBar user={user} setUser={setUser} />
+      <div className="main-content">
+          {user ? (
+            <Routes>
+              <Route path="/home" element={<Home />} />
+              <Route path="/messages" element={<MessagesList/>} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          ) : (
+            <Routes>
+              <Route path="/" element={<Navigate to="/register" replace />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          )}
+      </div>
+    </Router>  
   );
 }
 

@@ -120,7 +120,7 @@ class Messages(Resource):
                 return {'error': 'User not found'}, 404
 
             data = request.get_json()
-            if not data or not all(k in data for k in ['body']):
+            if not data['body']:
                 return {'error': 'Missing required field: body is required'}, 400
 
             new_message = Message(
@@ -159,6 +159,67 @@ api.add_resource(Messages, '/messages')
     #     db.session.commit()
 
     #     return make_response( new_message.to_dict(), 201 )
+
+class MessageById(Resource):
+    def get(self, message_id):
+        message = Message.query.filter_by(id=message_id).first()
+
+        if not message:
+            return {'error': 'Message not found'}, 404
+        
+        return message_schema.dump(message), 200
+    
+    def patch(self, message_id):
+        message = Message.query.filter_by(id=message_id).first()
+
+        if not message:
+            return {'error': 'Message not found'}, 404
+        
+        try:
+            data = request.get_json()
+
+            if not data:
+                return {'error': 'No data provided'}, 404
+            
+            updated_message = message_schema.load(data, instance=message, partial=True)
+            db.session.commit()
+
+            return message_schema.dump(updated_message), 200
+        
+        except ValidationError as ve:
+            return {'error': ve.messages}, 400
+        except Exception as e:
+            return {'error': f'Internal server error {str(e)}'}, 500
+        
+    def delete(self, message_id):
+        try:
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'error': 'Not authenticated'}, 401
+            
+            message = Message.query.get(message_id)
+            if not message:
+                return {'error': 'Message not found'}, 404
+            
+            if message.user_id != user_id:
+                return {'error': 'Unauthorized access to message'}, 403
+            
+            serialized_message = message_schema.dump(message)
+            try:
+                db.session.delete(message)
+                db.session.commit()
+                return {
+                    'message': 'Message deleted successfully',
+                    'deleted_message': serialized_message
+                }, 200
+            
+            except Exception as e:
+                db.session.rollback()
+                return {'error': f'Internal server error {str(e)}'}, 500
+        except Exception as e:
+            return {'error': f'Internal server error {str(e)}'}, 500
+        
+api.add_resource(MessageById, '/messages/<int:message_id>')
 
 # @app.route('/messages/<int:id>', methods = ['GET', 'PATCH', 'DELETE'])
 # def messages_by_id(id):
