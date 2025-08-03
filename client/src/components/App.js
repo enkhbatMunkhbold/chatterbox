@@ -37,14 +37,14 @@ function App() {
             <Routes>
               <Route path="/home" element={<Home />} />
               <Route path="/messages" element={<MessagesList/>} />
-              <Route path="*" element={<Navigate to="/login" replace />} />
+              <Route path="*" element={<Navigate to="/home" replace />} />
             </Routes>
           ) : (
             <Routes>
               <Route path="/" element={<Navigate to="/register" replace />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="*" element={<Navigate to="/login" replace />} />
+              <Route path="*" element={<Navigate to="/home" replace />} />
             </Routes>
           )}
       </div>
