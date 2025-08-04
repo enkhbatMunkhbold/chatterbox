@@ -6,13 +6,13 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(30), unique=True, nullable=False)
+    username = db.Column(db.String(30), nullable=False)
     _password_hash = db.Column(db.String, nullable=False)
 
     messages = db.relationship('Message', backref='user', cascade="all, delete")
 
     def set_password(self, password):
-        if len(password) > 8:
+        if len(password) < 8:
             raise ValueError("Password must be at least 8 characters long")
         password_hash = bcrypt.generate_password_hash(password.encode('utf-8'))
         self._password_hash = password_hash.decode('utf-8')
@@ -28,7 +28,7 @@ class Message(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String)
-    username = db.Column(db.String(30), unique=True, nullable=False)
+    username = db.Column(db.String(30), nullable=False)
     created_at = db.Column(db.DateTime, server_default = db.func.now())
     updated_at = db.Column(db.DateTime, onupdate = db.func.now())
 
