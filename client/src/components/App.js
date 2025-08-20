@@ -9,6 +9,7 @@ import Register from "./Register"
 function App() {
  
   const [user, setUser] = useState[null];
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     fetch('/check_session', {
@@ -16,7 +17,10 @@ function App() {
     })
     .then((r) => {
       if(r.ok) {
-        return r.json().then(user => setUser(user))
+        return r.json().then(user => {
+          setUser(user)
+          setIsLoading(false)
+        })
       } else if(r.status === 204) {
         setUser(null)
       } else {
@@ -26,8 +30,13 @@ function App() {
     .catch(error => {
       console.log("Error checking session:", error)
       setUser(null)
+      setIsLoading(false)
     })
   }, [setUser])  
+
+  if(isLoading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <Router>
@@ -44,7 +53,7 @@ function App() {
               <Route path="/" element={<Navigate to="/register" replace />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="*" element={<Navigate to="/home" replace />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           )}
       </div>
