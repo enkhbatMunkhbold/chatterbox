@@ -1,8 +1,8 @@
-import { useNavigate } from "react-router-dom"
+import { useHistory } from "react-router-dom"
 
 
 const NavBar = ({ user, setUser }) => {
-  const navigate = useNavigate()
+  const history = useHistory()
 
   const handleSignOut = () => {
     fetch('/logout', {
@@ -10,12 +10,12 @@ const NavBar = ({ user, setUser }) => {
       credentials: 'include',
     }).then(() => {
       setUser(null)
-      navigate('/home')
+      history.push('/home')
     })
   }
 
   const handleLogin = () => {
-    navigate('/signout')
+    history.push('/login')
   }
 
 
