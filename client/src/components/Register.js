@@ -1,6 +1,8 @@
 import { useFormik } from 'formik'
 import { useHistory, Link } from 'react-router-dom'
 import * as Yup from 'yup'
+import '../styling/register.css'
+import { apiCall } from '../config'
 
 const Register = ({ user, setUser }) => {
   const history = useHistory()
@@ -23,18 +25,16 @@ const Register = ({ user, setUser }) => {
         .oneOf([Yup.ref('password')], "Passwords must match")
     }),
     onSubmit: (values) => {
-      fetch("/register", {
+      apiCall("/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
         body: JSON.stringify({
           username: values.username,
           password: values.password
         })
       })
       .then(async res=> {
+        console.log("Registration response status:", res.status)
+        console.log("Registration response headers:", res.headers)
         if(res.ok) {
           return res.json()
         } else {
@@ -45,7 +45,7 @@ const Register = ({ user, setUser }) => {
       })
       .then(user => {
         setUser(user)
-        history.push("/profile")
+        history.replace("/home")
       })
       .catch(error => {
         console.error("Registration error:", error)

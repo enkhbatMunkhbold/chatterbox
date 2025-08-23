@@ -4,7 +4,9 @@ import Home from "./Home";
 import MessagesList from "./MessageList";
 import NavBar from "./NavBar";
 import Login from "./Login";
-import Register from "./Register"
+import Register from "./Register";
+import "../styling/index.css";
+import { apiCall } from "../config";
 
 function App() {
  
@@ -12,19 +14,21 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/check_session', {
-      credentials: 'include'
-    })
+    apiCall('/check_session')
     .then((r) => {
       if(r.ok) {
         return r.json().then(user => {
           setUser(user)
           setIsLoading(false)
         })
-      } else if(r.status === 204) {
+      } else if(r.status === 204 || r.status === 401) {
+        // 204 = No Content (no session), 401 = Unauthorized (no valid session)
         setUser(null)
+        setIsLoading(false)
       } else {
-        throw new Error(`HTTP error! Status: ${r.status}`)
+        console.error(`Unexpected status: ${r.status}`)
+        setUser(null)
+        setIsLoading(false)
       }
     })
     .catch(error => {
@@ -57,12 +61,12 @@ function App() {
               </Route>
               <Route path="/login" 
                 render = {(routeProps) => {
-                  <Login {...routeProps} user={user} setUser={setUser} />
+                  return <Login {...routeProps} user={user} setUser={setUser} />
                 }} 
               />
               <Route path="/register" 
                 render = {(routeProps) => {
-                  <Register {...routeProps} user={user} setUser={setUser} />
+                  return <Register {...routeProps} user={user} setUser={setUser} />
                 }}  />
               <Route path="*">
                 <Redirect to="/login" />

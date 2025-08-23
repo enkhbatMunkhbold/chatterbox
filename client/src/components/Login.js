@@ -2,6 +2,8 @@ import { useFormik } from 'formik'
 import { useState } from 'react'
 import { useHistory, Link } from 'react-router-dom'
 import * as Yup from 'yup'
+import '../styling/login.css'
+import { apiCall } from '../config'
 
 const Login = ({ user, setUser}) => {
   const [ error, setError ] = useState('')
@@ -17,12 +19,8 @@ const Login = ({ user, setUser}) => {
       password: Yup.string().required("Password is required")
     }),
     onSubmit: (values) => {
-      fetch("/login", {
+      apiCall("/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
         body: JSON.stringify(values)
       })
       .then(res => {
@@ -60,6 +58,20 @@ const Login = ({ user, setUser}) => {
           {formik.touched.username && formik.errors.username ? (
             <p className='error-message' style={{ color: "red" }}>{formik.errors.password}</p>
           ) : null}
+        </div>
+        <div className='form-group'>
+          <input 
+            type="password"
+            name="password"
+            placeholder='Password'
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            autoComplete='new-password'
+          />
+          {formik.touched.password && formik.errors.password && (
+            <p style={{ color: "red" }}>{formik.errors.password}</p>
+          )}
         </div>
         <button type="submit">Login</button>
         <div className='auth-link'>
