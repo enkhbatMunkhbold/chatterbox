@@ -246,4 +246,4 @@ api.add_resource(MessageById, '/messages/<int:message_id>')
 #         return make_response( respond_body, 200 )
 
 if __name__ == '__main__':
-    app.run(port=5555)
+    app.run(port=5000)
