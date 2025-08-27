@@ -16,10 +16,10 @@ const Register = ({ user, setUser }) => {
     validationSchema: Yup.object({
       username: Yup.string()
         .required("Username is required")
-        .min(3, "Username mast be at least 3 characters long"),
-      pasword: Yup.string()
+        .min(2, "Username must be at least 2 characters long"),
+      password: Yup.string()
         .required("Password is required")
-        .min(9, "Password must meb at least 9 characters long"),
+        .min(8, "Password must be at least 8 characters long"),
       passwordConfirmation: Yup.string()
         .required("Password confirmation is required")
         .oneOf([Yup.ref('password')], "Passwords must match")
